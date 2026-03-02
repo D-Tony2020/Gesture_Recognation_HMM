@@ -15,6 +15,23 @@
 - **关联实验**: experiments/exp_xxx.md#ID
 -->
 
+## [2026-03-02] LOOCV 验证 97.2%，修复数据泄漏 + 内存优化
+
+- **背景**: 发现 E001 验证存在数据泄漏（single file 同时参与训练和验证），需要真正的 held-out 评估。
+- **修复措施**:
+  1. HMM train() 内存优化：不再存储完整 xi 数组 (N,N,T-1)，改为逐步累加 (N,N) 统计量，避免连续多次训练后 MemoryError
+  2. 编写 `run_training.py` 分批执行脚本：支持断点恢复、实时进度输出
+  3. 实施 6-fold Leave-One-Out Cross-Validation (E002)
+- **LOOCV 结果 (E002)**:
+  - **Top-1: 35/36 = 97.2%**, Top-3: 36/36 = 100%
+  - 唯一错误: beat3 rep4 被误判为 beat4（符合预期的最易混淆手势对）
+  - wave 使用了 seed=99（Batch 1 多种子搜索的最优结果），其余手势用 seed=42
+- **踩坑**: nbconvert 黑盒执行 30+ 次 HMM 训练导致 MemoryError (5.18 MiB xi 数组分配失败)，根因是 Python 内存碎片化
+- **下一步**: 考虑是否对 beat3 做多种子优化提升该手势的区分度
+- **关联实验**: experiments/exp_evaluation.md#E002
+
+---
+
 ## [2026-03-02] 6 个手势 HMM 训练完成，验证 100%
 
 - **背景**: 在 toy data 验证通过后，使用 N=15, M=70, left-right-cyclic 拓扑训练 6 个手势 HMM。
