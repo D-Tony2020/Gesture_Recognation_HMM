@@ -15,6 +15,22 @@
 - **关联实验**: experiments/exp_xxx.md#ID
 -->
 
+## [2026-03-02] 6 个手势 HMM 训练完成，验证 100%
+
+- **背景**: 在 toy data 验证通过后，使用 N=15, M=70, left-right-cyclic 拓扑训练 6 个手势 HMM。
+- **训练结果**:
+  - 6 个模型全部训练完成，LL 全部单调不降
+  - eight/circle/beat3 在 45-85 epoch 收敛（tol=0.01），wave/inf/beat4 跑满 100 epoch 但变化已很小
+  - A 对角线范围合理，B 行和 = 1.0
+- **验证结果（E001）**:
+  - 使用 train set 2（单次手势文件）验证：**6/6 = 100% Top-1 准确率**
+  - 正确手势的 LL 与第二名差距显著（通常 >3000），beat3↔beat4 最接近但仍有清晰分离
+- **模型已保存**: `models/{gesture}_hmm.pkl` × 6
+- **下一步**: 编写 `test_classifier.py` 推理脚本
+- **关联实验**: experiments/exp_hmm_training.md#H001–H006, experiments/exp_evaluation.md#E001
+
+---
+
 ## [2026-03-02] HMM 核心算法实现与 Toy Data 验证
 
 - **背景**: 数据预处理和向量量化完成后，进入项目核心——实现 HMM 的 Forward/Backward/Baum-Welch 算法。

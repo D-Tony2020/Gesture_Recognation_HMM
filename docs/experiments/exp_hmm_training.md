@@ -7,7 +7,12 @@
 
 | ID | 日期 | 手势 | N (状态数) | M (观测数) | 量化ID | HMM结构 | 初始化策略 | 收敛轮次 | 最终LL | LL单调? | 备注 |
 |----|------|------|-----------|-----------|--------|---------|-----------|---------|--------|---------|------|
-| — | — | — | — | — | — | — | — | — | — | — | 暂无实验 |
+| H001 | 2026-03-02 | wave | 15 | 70 | Q001 | Left-Right-Cyclic | dirichlet+随机A, seed=42 | 100 (未收敛) | -10452.24 | Yes | 基线配置 |
+| H002 | 2026-03-02 | inf | 15 | 70 | Q001 | Left-Right-Cyclic | dirichlet+随机A, seed=42 | 100 (未收敛) | -13629.38 | Yes | 基线配置 |
+| H003 | 2026-03-02 | eight | 15 | 70 | Q001 | Left-Right-Cyclic | dirichlet+随机A, seed=42 | 45 | -13912.13 | Yes | 收敛 tol=0.01 |
+| H004 | 2026-03-02 | circle | 15 | 70 | Q001 | Left-Right-Cyclic | dirichlet+随机A, seed=42 | 84 | -6787.27 | Yes | 收敛 tol=0.01 |
+| H005 | 2026-03-02 | beat3 | 15 | 70 | Q001 | Left-Right-Cyclic | dirichlet+随机A, seed=42 | 85 | -10073.10 | Yes | 收敛 tol=0.01 |
+| H006 | 2026-03-02 | beat4 | 15 | 70 | Q001 | Left-Right-Cyclic | dirichlet+随机A, seed=42 | 100 (未收敛) | -14102.24 | Yes | 基线配置 |
 
 ## 字段说明
 
