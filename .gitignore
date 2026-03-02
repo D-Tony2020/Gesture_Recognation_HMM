@@ -1,0 +1,39 @@
+# === AI/辅助文件 — 不进入版本控制 ===
+CLAUDE.md
+Rquiements.md
+.claude/
+
+# === 课件与原始PDF ===
+slides/
+Project 2.pdf
+
+# === Python ===
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+
+# === 数据目录（训练/测试数据不入库）===
+data/
+train_data/
+test_data/
+
+# === 模型文件（大文件，用 git lfs 或单独管理）===
+# 注意：最终提交需要包含模型文件，但开发过程中频繁变更不适合 git 跟踪
+# 如果模型文件较小（<50MB）可以取消下面的注释来跟踪
+# models/
+
+# === 系统文件 ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === IDE ===
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# === 临时文件 ===
+*.tmp
+*.bak
