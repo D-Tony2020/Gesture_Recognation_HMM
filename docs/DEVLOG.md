@@ -15,6 +15,25 @@
 - **关联实验**: experiments/exp_xxx.md#ID
 -->
 
+## [2026-03-02] HMM 核心算法实现与 Toy Data 验证
+
+- **背景**: 数据预处理和向量量化完成后，进入项目核心——实现 HMM 的 Forward/Backward/Baum-Welch 算法。
+- **动机**: 先在 toy data 上验证算法正确性，再用于真实手势数据。Rabiner 论文 Section V 的 scaling procedure 是必须的，否则长序列数值下溢。
+- **关键实现**:
+  - HMM class (~110 行): `forward()`, `backward()`, `log_likelihood()`, `train()`
+  - 支持 ergodic 和 left-right-cyclic 两种拓扑
+  - Baum-Welch: 多序列训练——各序列独立 E-step，γ/ξ 累加后统一 M-step
+  - A 矩阵拓扑约束通过 mask 在 M-step 后强制执行
+- **Toy Data 验证**:
+  - 数据: 3000 步 (state0×1000 → state1×1000 → state0×1000)
+  - 收敛 19 epoch, LL = -707.50
+  - A ≈ [[0.999, 0.001], [0.001, 0.999]], B ≈ [[1.0, 0.0], [0.48, 0.52]] ✓
+  - LL 严格单调不降 ✓
+- **踩坑**: seed=42 时 EM 陷入局部最优（两个 B 行几乎相同），换 seed=4 后正确收敛。验证了多次随机初始化的必要性。
+- **下一步**: 在真实手势数据上训练 6 个 HMM（N=15, M=70）
+
+---
+
 ## [2026-03-02] 数据探索与向量量化完成
 
 - **背景**: 加载训练数据后，首先需要理解 IMU 信号的形态，然后将连续 6D 向量离散化为 HMM 可用的观测标签。
