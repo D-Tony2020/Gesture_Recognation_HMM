@@ -141,7 +141,13 @@ Fix: additive smoothing on $B$---add $\varepsilon = 10^{-8}$ to every entry, the
 
 \subsection{Parameter Initialization}
 
-\textbf{$A$ matrix} (transition probabilities): For the left-to-right cyclic topology, only the diagonal (self-loop), super-diagonal (advance), and the cyclic position (last $\to$ first) are nonzero. Self-loop probabilities are initialized to random values between 0.5--0.7 (so each state stays for a few steps on average, covering a chunk of the observation), and the advance probability is whatever's left. An $A_{\text{mask}}$ matrix forces all disallowed positions to zero after every M-step, so the LR topology can't get corrupted during training. Also worth noting: positions that start at zero in $A$ will stay zero forever through EM---this is mathematically guaranteed by the left-to-right constraint.
+\textbf{$A$ matrix} (transition probabilities): For the left-to-right cyclic topology, only the diagonal (self-loop), super-diagonal (advance), and the cyclic position (last $\to$ first) are nonzero.
+
+The key constraint is that \emph{positions initialized to zero in $A$ will remain zero forever under EM}. This is because the M-step re-estimation formula for $a_{ij}$ is proportional to $\xi_t(i,j)$, which itself is proportional to $a_{ij}$---so if $a_{ij}=0$, the numerator stays zero across all iterations. In a left-to-right model this is \emph{desirable}: it automatically preserves the topology without needing to explicitly constrain the optimizer. However, it also means that any position that \emph{should} be nonzero must be initialized to a positive value; an accidental zero there would be permanent and irrecoverable.
+
+For the nonzero positions, self-loop probabilities are initialized to random values between 0.5--0.7 (so each state stays for a few steps on average, covering a chunk of the observation), and the advance probability is whatever's left. To guard against the possibility that rounding or implementation bugs accidentally zero out a valid transition, a small positive floor ($\varepsilon = 10^{-8}$) is added to all structurally allowed positions before renormalization.
+
+An $A_{\text{mask}}$ matrix forces all disallowed positions to zero after every M-step, so that numerical noise cannot introduce spurious transitions and corrupt the LR topology during training.
 
 \textbf{$B$ matrix} (emission probabilities): Sampled from $\text{Dirichlet}(1,1,\ldots,1)$ (uniform random on the $M$-dim simplex), then add $\varepsilon = 10^{-8}$ and renormalize. I don't use uniform initialization (every row $= 1/M$) because symmetric initial conditions cause all states to learn the same $B$ row, and the model basically can't learn anything useful.
 

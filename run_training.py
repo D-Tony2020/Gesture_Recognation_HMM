@@ -118,6 +118,7 @@ class HMM:
             gamma_denom_A[gamma_denom_A == 0] = 1e-300
             A_new = xi_sum / gamma_denom_A[:, np.newaxis]
             A_new *= self.A_mask
+            A_new += 1e-8 * self.A_mask
             A_new /= A_new.sum(axis=1, keepdims=True) + 1e-300
 
             gamma_denom_B[gamma_denom_B == 0] = 1e-300
