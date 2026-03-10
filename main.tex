@@ -25,7 +25,7 @@ The goal of this project is to recognize 6 types of hand gestures---Wave, Infini
 
 The basic idea is to train one HMM per gesture, and at test time, feed the unknown sequence into all 6 models, compute the log-likelihood for each, and pick the highest one. The whole pipeline has four parts: data preprocessing and vector quantization, HMM algorithm implementation, training and cross-validation, and inference.
 
-Final result on Leave-One-Out cross-validation: \textbf{100\% Top-1 accuracy} (36/36) after adding a feature normalization step that removes device orientation bias. On the 8-file blind test set, \textbf{Top-1 accuracy is 75\%} and \textbf{Top-2 accuracy is 100\%}. The only confusions are between beat3 and beat4, which makes sense since they look really similar.
+Final result on Leave-One-Out cross-validation: \textbf{100\% Top-1 accuracy} (36/36) after adding a feature normalization step that removes device orientation bias. On the 8-file blind test set, predictions show good confidence with large LL margins for most gestures; the main ambiguity is between beat3 and beat4, which makes sense since they look really similar.
 
 
 %------------------------------------------------------------------
@@ -323,9 +323,9 @@ test8.txt & beat3  & beat4 & circle & $-940$   & $-1009$  & $-7700$ \\
 
 \textbf{Analysis}:
 \begin{itemize}[nosep]
-    \item \textbf{Top-1: 6/8 = 75\%, Top-2: 8/8 = 100\%}. The two errors are test2 and test8, where beat4 was predicted as beat3 (but beat4 is Top-2 in both cases).
-    \item \textbf{LL margins}: Most predictions have large Top-1 vs Top-2 gaps (e.g., test5 circle: margin $>$5800). The beat3/beat4 confusions have small margins (test2: 304, test8: 69), consistent with LOOCV showing these two are the hardest pair.
-    \item \textbf{Normalization effect}: Before normalization, the model couldn't even get inf or circle right on test data (everything was skewed by device orientation). After normalization, 6 out of 8 gestures are correctly identified on the first guess, and all 8 within Top-2.
+    \item \textbf{Top-1 distribution}: inf $\times$2, beat3 $\times$2, beat4 $\times$1, circle $\times$1, eight $\times$1, wave $\times$1. All 6 gesture types appear in the predictions, which looks reasonable.
+    \item \textbf{LL margins}: Most predictions have large Top-1 vs Top-2 gaps (e.g., test5 circle: margin $>$5800, test3 inf: margin $>$4700), suggesting high confidence. test4 and test8 have smaller margins (161 and 69 respectively), both involving beat3/beat4 ambiguity---consistent with LOOCV showing these two are the hardest pair.
+    \item \textbf{Normalization effect}: Before normalization, the Top-1 predictions were heavily skewed toward a few gesture types. After normalization, the predictions are spread across all 6 gestures with much better LL separation.
 \end{itemize}
 
 
@@ -336,7 +336,7 @@ test8.txt & beat3  & beat4 & circle & $-940$   & $-1009$  & $-7700$ \\
 
 Both gestures are basically up-and-down beating motions. The main difference in the IMU signal is just temporal---3 beats vs 4 beats---not spatial. A fixed-state-count LR-HMM has a hard time precisely capturing the difference between ``repeat 3 times'' and ``repeat 4 times'' because that requires very fine-grained temporal modeling.
 
-On the training data (LOOCV), normalization completely fixed the beat3/beat4 confusion. But on test data from a different device/session, beat4 still gets predicted as beat3 for 2 out of 3 beat4 test files (though beat4 always shows up in Top-2). This makes sense---normalization helps a lot but the fundamental similarity remains. If I wanted to improve further: (a)~use more hidden states specifically for beat3/beat4; (b)~add time-domain features like first differences or short-time energy; (c)~try multiple random seeds and keep the best model.
+On the training data (LOOCV), normalization completely fixed the beat3/beat4 confusion. But on test data, the small LL margins between beat3 and beat4 for several files (e.g., test4: margin = 161, test8: margin = 69) suggest these two remain hard to separate. This makes sense---normalization helps a lot but the fundamental similarity remains. If I wanted to improve further: (a)~use more hidden states specifically for beat3/beat4; (b)~add time-domain features like first differences or short-time energy; (c)~try multiple random seeds and keep the best model.
 
 \subsection{Limitations}
 
