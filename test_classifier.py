@@ -1,5 +1,13 @@
 """
 Gesture classifier - loads trained HMM models and classifies test IMU data
+
+Preprocessing pipeline:
+  1. Load raw IMU data (drop timestamp column)
+  2. Per-sequence mean removal (removes gravity / device orientation bias)
+  3. Global std normalization (equalizes gyro & accel channel contributions)
+  4. KMeans quantization -> discrete observation sequence
+  5. Forward algorithm -> log-likelihood per gesture model
+  6. Rank by LL -> Top-3 predictions
 """
 import numpy as np
 import pickle
@@ -13,6 +21,10 @@ TEST_DIR = 'data/Test_gesture'  # change this to wherever the test files are
 GESTURE_NAMES = ['wave', 'inf', 'eight', 'circle', 'beat3', 'beat4']
 
 def load_models():
+    # load normalization parameters
+    with open(os.path.join(MODEL_DIR, 'norm_params.pkl'), 'rb') as f:
+        norm_params = pickle.load(f)
+
     # load kmeans
     with open(os.path.join(MODEL_DIR, 'kmeans_model.pkl'), 'rb') as f:
         kmeans = pickle.load(f)
@@ -24,7 +36,13 @@ def load_models():
         with open(fname, 'rb') as f:
             models[gname] = pickle.load(f)
 
-    return kmeans, models
+    return kmeans, models, norm_params
+
+
+def normalize_sequence(imu, global_std):
+    """Per-sequence mean removal + global std normalization"""
+    centered = imu - imu.mean(axis=0)
+    return centered / global_std
 
 
 def forward_log_likelihood(A, B, pi, obs):
@@ -64,7 +82,8 @@ def classify(obs, models):
 
 def main():
     print("Loading models...")
-    kmeans, models = load_models()
+    kmeans, models, norm_params = load_models()
+    global_std = norm_params['global_std']
     print(f"Loaded {len(models)} gesture models, kmeans with {kmeans.n_clusters} clusters")
 
     # find test files
@@ -79,10 +98,15 @@ def main():
     print("-" * 96)
 
     for fpath in test_files:
-        # load and quantize
+        # load raw IMU data
         raw = np.loadtxt(fpath)
         imu = raw[:, 1:]  # drop timestamp
-        obs = kmeans.predict(imu)
+
+        # normalize: per-sequence mean removal + global std normalization
+        imu_norm = normalize_sequence(imu, global_std)
+
+        # quantize
+        obs = kmeans.predict(imu_norm)
 
         # classify
         ranked = classify(obs, models)
